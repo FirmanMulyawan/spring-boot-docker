@@ -1,0 +1,35 @@
+LEVEL 1
+Konsep dasar Docker
+        ↓
+LEVEL 2
+Docker CLI
+        ↓
+LEVEL 3
+Image & Container
+        ↓
+LEVEL 4
+Dockerfile
+        ↓
+LEVEL 5
+Volume & Storage
+        ↓
+LEVEL 6
+Network
+        ↓
+LEVEL 7
+Docker Compose
+        ↓
+LEVEL 8
+Database + Redis + Kafka
+        ↓
+LEVEL 9
+Docker + Spring Boot
+        ↓
+LEVEL 10
+Deploy ke VPS
+        ↓
+LEVEL 11
+Nginx + HTTPS
+        ↓
+LEVEL 12
+Production & CI/CD
