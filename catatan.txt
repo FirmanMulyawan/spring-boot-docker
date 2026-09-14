@@ -1,0 +1,2288 @@
+Siap 👍 Kita mulai dari **LEVEL 1 — Konsep Dasar Docker**. Saya akan jelaskan **pelan-pelan dengan bahasa sederhana**, tidak langsung dijejali banyak command.
+
+Anggap saja kita sedang belajar Docker dari **nol banget**.
+
+# 🐳 LEVEL 1 — Konsep Dasar Docker
+
+Sebelum belajar command seperti `docker run`, `docker ps`, dan `docker compose`, kita harus memahami **5 benda utama**:
+
+```text
+Docker
+Image
+Container
+Dockerfile
+Registry
+```
+
+Kita bahas satu-satu.
+
+---
+
+## 1. Apa itu Docker?
+
+Bayangkan kamu punya aplikasi.
+
+Misalnya aplikasi Spring Boot kamu membutuhkan:
+
+```text
+Java 21
+Spring Boot
+PostgreSQL
+Redis
+```
+
+Kalau kamu menjalankannya langsung di komputer, kamu harus memastikan semuanya sudah terinstall dan versinya cocok.
+
+Masalahnya:
+
+```text
+Laptop saya      → berhasil
+Laptop teman     → error
+Server           → error
+```
+
+😵
+
+Docker membantu membuat lingkungan aplikasi menjadi lebih **konsisten**.
+
+Sederhananya:
+
+> **Docker adalah alat untuk menjalankan aplikasi di dalam lingkungan yang terisolasi yang disebut container.**
+
+---
+
+# 2. Apa itu Container?
+
+Ini bagian paling penting.
+
+Bayangkan kamu punya **kotak** 📦.
+
+Di dalam kotak itu ada aplikasi yang ingin kamu jalankan.
+
+```text
+┌──────────────────────┐
+│      CONTAINER       │
+│                      │
+│   Aplikasi           │
+│   + kebutuhan        │
+│                      │
+└──────────────────────┘
+```
+
+Kotak tersebut adalah **container**.
+
+Misalnya:
+
+```text
+┌──────────────────────┐
+│ PostgreSQL Container │
+│                      │
+│ PostgreSQL           │
+└──────────────────────┘
+```
+
+Atau:
+
+```text
+┌──────────────────────┐
+│ Redis Container      │
+│                      │
+│ Redis                │
+└──────────────────────┘
+```
+
+Jadi:
+
+> **Container = tempat aplikasi berjalan.**
+
+---
+
+# 3. Apa itu Image?
+
+Nah, sekarang kita punya container.
+
+Pertanyaannya:
+
+> "Container itu dibuat dari mana?"
+
+Jawabannya:
+
+**Image.**
+
+Bayangkan:
+
+```text
+IMAGE = cetakan
+CONTAINER = hasil cetakan
+```
+
+Misalnya kamu punya cetakan kue 🍪.
+
+```text
+      CETAKAN
+        ↓
+      🍪
+      🍪
+      🍪
+```
+
+Sama dengan Docker:
+
+```text
+      IMAGE
+        ↓
+   ┌────┴────┐
+   ↓         ↓
+Container  Container
+```
+
+Contoh:
+
+```text
+Redis Image
+     ↓
+     ├── Redis Container 1
+     ├── Redis Container 2
+     └── Redis Container 3
+```
+
+Jadi:
+
+> **Image adalah template/cetakan untuk membuat container.**
+
+---
+
+# 4. Image dan Container jangan tertukar
+
+Ini sangat penting.
+
+### Image
+
+```text
+IMAGE
+↓
+Template
+↓
+Cetakan
+↓
+Belum tentu sedang berjalan
+```
+
+### Container
+
+```text
+CONTAINER
+↓
+Dibuat dari Image
+↓
+Bisa dijalankan
+↓
+Bisa dihentikan
+```
+
+Analogi rumah 🏠:
+
+```text
+Denah rumah
+     ↓
+   IMAGE
+
+Rumah yang dibangun
+     ↓
+ CONTAINER
+```
+
+---
+
+# 5. Contoh nyata
+
+Misalnya kita punya:
+
+```text
+nginx
+```
+
+Nginx bisa kita ambil dalam bentuk **Docker Image**.
+
+Kemudian image tersebut digunakan untuk membuat container.
+
+```text
+nginx IMAGE
+     ↓
+nginx CONTAINER
+```
+
+Container tersebut kemudian menjalankan Nginx.
+
+Jadi alurnya:
+
+```text
+Docker Image
+     ↓
+buat container
+     ↓
+Container berjalan
+     ↓
+Nginx berjalan
+```
+
+---
+
+# 6. Apa itu Dockerfile?
+
+Sekarang muncul pertanyaan baru:
+
+> "Kalau saya ingin membuat Image sendiri bagaimana?"
+
+Nah, kita menggunakan:
+
+**Dockerfile.**
+
+Dockerfile adalah file yang berisi **instruksi untuk membuat Docker Image**.
+
+Misalnya:
+
+```text
+Dockerfile
+    ↓
+"Gunakan Java"
+"Copy aplikasi"
+"Jalankan aplikasi"
+    ↓
+Docker Image
+```
+
+Jadi:
+
+```text
+Dockerfile
+     ↓
+ docker build
+     ↓
+Docker Image
+     ↓
+ docker run
+     ↓
+Container
+```
+
+Ini adalah salah satu alur terpenting dalam Docker.
+
+---
+
+# 7. Apa itu Registry?
+
+Sekarang kita punya Image.
+
+Pertanyaannya:
+
+> "Kalau saya punya Image di laptop, bagaimana saya menyimpannya atau mengambil Image milik orang lain?"
+
+Gunakan **Registry**.
+
+Registry adalah tempat menyimpan Docker Image.
+
+Contoh paling terkenal:
+
+**Docker Hub**
+
+Bayangkan seperti:
+
+```text
+GitHub
+↓
+menyimpan source code
+
+Docker Hub
+↓
+menyimpan Docker Image
+```
+
+Misalnya:
+
+```text
+Docker Hub
+│
+├── nginx
+├── redis
+├── postgres
+├── mysql
+└── dll
+```
+
+Kita bisa mengambil image dari registry.
+
+```text
+Docker Hub
+     ↓
+  nginx image
+     ↓
+    Laptop
+```
+
+---
+
+# 8. Jadi hubungan semuanya bagaimana?
+
+Sekarang gabungkan semuanya.
+
+```text
+                 DOCKER HUB
+                     │
+                     │ download
+                     ↓
+                  IMAGE
+                     │
+                     │ create
+                     ↓
+                CONTAINER
+                     │
+                     ↓
+                 APLIKASI
+```
+
+Kalau kita membuat image sendiri:
+
+```text
+              Dockerfile
+                  │
+                  │ build
+                  ↓
+                IMAGE
+                  │
+                  │ run
+                  ↓
+              CONTAINER
+                  │
+                  ↓
+               APLIKASI
+```
+
+---
+
+# 9. Contoh dengan Spring Boot
+
+Misalnya kamu punya:
+
+```text
+DigiAsk Backend
+```
+
+yang dibuat menggunakan:
+
+```text
+Java
+Spring Boot
+```
+
+Kita bisa membuat:
+
+```text
+Dockerfile
+    ↓
+Spring Boot Image
+    ↓
+Spring Boot Container
+    ↓
+Spring Boot berjalan
+```
+
+Kemudian database:
+
+```text
+PostgreSQL Image
+       ↓
+PostgreSQL Container
+       ↓
+Database berjalan
+```
+
+Redis:
+
+```text
+Redis Image
+       ↓
+Redis Container
+       ↓
+Redis berjalan
+```
+
+Akhirnya:
+
+```text
+Docker
+│
+├── Spring Boot Container
+│
+├── PostgreSQL Container
+│
+└── Redis Container
+```
+
+Ini nanti akan sangat dekat dengan project backend yang kamu kerjakan.
+
+---
+
+# 10. Kenapa tidak satu container saja?
+
+Misalnya:
+
+```text
+❌ 1 Container
+   ├── Spring Boot
+   ├── PostgreSQL
+   └── Redis
+```
+
+Biasanya Docker digunakan dengan pendekatan:
+
+```text
+✅ Spring Boot Container
+        +
+   PostgreSQL Container
+        +
+      Redis Container
+```
+
+Masing-masing punya tugas sendiri.
+
+```text
+Spring Boot
+    ↓
+mengurus aplikasi/API
+
+PostgreSQL
+    ↓
+mengurus database
+
+Redis
+    ↓
+mengurus cache
+```
+
+Nanti container-container tersebut bisa saling berkomunikasi melalui **Docker Network**.
+
+---
+
+# 🧠 11. Lima istilah yang harus kamu ingat
+
+Untuk hari ini, cukup hafalkan ini:
+
+### Docker
+
+> Alat untuk menjalankan aplikasi menggunakan container.
+
+### Container
+
+> Tempat aplikasi berjalan.
+
+### Image
+
+> Cetakan/template untuk membuat container.
+
+### Dockerfile
+
+> Instruksi untuk membuat Image.
+
+### Registry
+
+> Tempat menyimpan Docker Image.
+
+---
+
+# ⭐ Rumus paling gampang
+
+Kalau lupa semuanya, ingat ini:
+
+```text
+Dockerfile
+    ↓
+  IMAGE
+    ↓
+CONTAINER
+    ↓
+ APLIKASI
+```
+
+Sedangkan Image bisa berasal dari registry:
+
+```text
+Docker Hub
+    ↓
+  IMAGE
+    ↓
+CONTAINER
+```
+
+---
+
+# 🎯 Tes kecil sebelum LEVEL 2
+
+Coba jawab **tanpa melihat penjelasan di atas**:
+
+**1.** Kalau `Image` adalah cetakan, maka `Container` adalah apa?
+
+**2.** Kalau ingin membuat Image sendiri, kita menggunakan file apa?
+
+**3.** Docker Hub digunakan untuk apa?
+
+**4.** Mana yang benar?
+
+```text
+A. Container → Image → Dockerfile
+
+B. Dockerfile → Image → Container
+```
+
+**5.** Kalau kita punya:
+
+```text
+Redis Image
+```
+
+apakah kita bisa membuat **2 Redis Container** dari image tersebut?
+
+Jawab 1–5 saja. Setelah itu saya akan cek jawabanmu, lalu kita lanjut **LEVEL 2 — Docker CLI** dengan praktik pertama `docker run` secara pelan-pelan.
+
+---
+
+Betul semua! 🎉 **5/5 benar.** Berarti konsep dasar Docker sudah mulai masuk.
+
+Kita lanjut ke **LEVEL 2 — Docker CLI**, tapi tetap pelan-pelan.
+
+# 🐳 LEVEL 2 — Docker CLI
+
+**CLI** adalah singkatan dari:
+
+> **Command Line Interface**
+
+Bahasa sederhananya:
+
+> **CLI = cara kita menyuruh Docker menggunakan terminal.**
+
+Misalnya kita mengetik:
+
+```powershell
+docker ps
+```
+
+Kita sedang **memberi perintah kepada Docker**.
+
+---
+
+## 1. Sebelum praktik: pastikan Docker hidup
+
+Karena sebelumnya kamu mendapatkan error:
+
+```text
+failed to connect to the docker API
+dockerDesktopLinuxEngine
+```
+
+pastikan **Docker Desktop sudah dibuka dan Docker Engine sudah running**.
+
+Kemudian di PowerShell:
+
+```powershell
+docker --version
+```
+
+Kalau berhasil, akan muncul kira-kira:
+
+```text
+Docker version 28.x.x, build xxxxx
+```
+
+Artinya:
+
+> Docker CLI sudah dikenali oleh Windows.
+
+---
+
+# 2. Command pertama: `docker ps`
+
+Sekarang jalankan:
+
+```powershell
+docker ps
+```
+
+Apa artinya?
+
+`ps` bisa kita anggap sebagai:
+
+> **lihat container yang sedang berjalan**
+
+Kalau belum ada container, kemungkinan hasilnya seperti:
+
+```text
+CONTAINER ID   IMAGE   COMMAND   CREATED   STATUS   PORTS   NAMES
+```
+
+Kosong tidak masalah.
+
+Artinya:
+
+> Docker hidup, tetapi saat ini belum ada container yang berjalan.
+
+---
+
+# 3. `docker ps -a`
+
+Sekarang:
+
+```powershell
+docker ps -a
+```
+
+Bedanya:
+
+```text
+docker ps
+    ↓
+container yang sedang berjalan
+```
+
+sedangkan:
+
+```text
+docker ps -a
+    ↓
+semua container
+```
+
+Termasuk container yang sudah berhenti.
+
+---
+
+# 4. Analogi gampang
+
+Bayangkan kamu punya garasi 🚗.
+
+```text
+docker ps
+```
+
+seperti:
+
+> "Tampilkan mobil yang **sedang ada di jalan**."
+
+Sedangkan:
+
+```text
+docker ps -a
+```
+
+seperti:
+
+> "Tampilkan **semua mobil**, termasuk yang sedang parkir."
+
+---
+
+# 5. Command berikutnya: `docker images`
+
+Sekarang:
+
+```powershell
+docker images
+```
+
+Ini digunakan untuk melihat:
+
+> **Image apa saja yang sudah ada di komputer kita.**
+
+Misalnya:
+
+```text
+REPOSITORY   TAG       IMAGE ID
+nginx        latest    xxxxx
+redis        7         xxxxx
+postgres     16        xxxxx
+```
+
+Jadi:
+
+```text
+docker ps
+```
+
+→ melihat **container**
+
+```text
+docker images
+```
+
+→ melihat **image**
+
+Ini harus kamu bedakan.
+
+---
+
+# 🧠 Ingat 3 command ini dulu
+
+```text
+docker ps
+     ↓
+lihat container yang berjalan
+
+docker ps -a
+     ↓
+lihat semua container
+
+docker images
+     ↓
+lihat image
+```
+
+Jangan belajar 20 command sekaligus.
+
+Kita kuasai **3 ini dulu**.
+
+---
+
+# 🧪 Praktik pertama
+
+Sekarang buka **PowerShell** dan jalankan satu per satu:
+
+```powershell
+docker --version
+```
+
+kemudian:
+
+```powershell
+docker ps
+```
+
+kemudian:
+
+```powershell
+docker ps -a
+```
+
+kemudian:
+
+```powershell
+docker images
+```
+
+**Kirim hasilnya ke saya.**
+
+Setelah itu kita akan melakukan hal yang lebih menarik:
+
+```text
+Docker Hub
+    ↓
+download Nginx Image
+    ↓
+buat Container
+    ↓
+jalankan Nginx
+    ↓
+buka http://localhost:8080
+```
+
+Itu akan menjadi **praktik Docker pertama kamu**. 🚀
+
+---
+
+Mantap 👍 **Docker kamu sudah berjalan dengan normal.** Bahkan environment Docker kamu sudah lumayan lengkap. 😄
+
+Mari kita **jangan buru-buru masuk ke command berikutnya**. Kita gunakan hasil terminal kamu untuk memahami konsep LEVEL 2.
+
+## 1. `docker --version` ✅
+
+Kamu mendapatkan:
+
+```text
+Docker version 29.7.2
+```
+
+Artinya:
+
+> Docker CLI sudah terinstall dan bisa digunakan.
+
+---
+
+## 2. `docker ps` ✅
+
+Kamu punya **2 container yang sedang berjalan**:
+
+```text
+postgres
+redis
+```
+
+Perhatikan bagian:
+
+```text
+IMAGE
+postgres:16-alpine
+redis:6.0.8
+```
+
+Ini menghubungkan dengan pelajaran LEVEL 1 kita.
+
+```text
+postgres:16-alpine
+        ↓
+    PostgreSQL
+        ↓
+   postgres container
+```
+
+dan:
+
+```text
+redis:6.0.8
+        ↓
+      Redis
+        ↓
+   redis container
+```
+
+Jadi sekarang kamu sudah melihat sendiri:
+
+> **Image → Container**
+
+---
+
+# 3. Mari baca `docker ps`
+
+Contoh milikmu:
+
+```text
+CONTAINER ID   IMAGE                STATUS       PORTS       NAMES
+976323b33abd   postgres:16-alpine   Up 2 hours   ...         postgres
+b454c3c2085b   redis:6.0.8          Up 2 hours   ...         redis
+```
+
+Ada beberapa kolom penting.
+
+### `CONTAINER ID`
+
+Contohnya:
+
+```text
+976323b33abd
+```
+
+Ini adalah **ID unik container**.
+
+Anggap seperti nomor identitas container.
+
+---
+
+### `IMAGE`
+
+Contohnya:
+
+```text
+postgres:16-alpine
+```
+
+Ini adalah **image yang digunakan untuk membuat container tersebut**.
+
+Jadi:
+
+```text
+postgres:16-alpine
+       ↓
+   container
+       ↓
+    postgres
+```
+
+---
+
+### `STATUS`
+
+```text
+Up 2 hours
+```
+
+Artinya container tersebut **sedang berjalan**.
+
+Kalau:
+
+```text
+Exited
+```
+
+artinya container tersebut **sudah berhenti**.
+
+---
+
+### `PORTS`
+
+PostgreSQL kamu:
+
+```text
+0.0.0.0:5432->5432/tcp
+```
+
+Jangan khawatir dulu kalau ini terlihat rumit.
+
+Sederhananya:
+
+```text
+Windows : 5432
+    ↓
+Docker PostgreSQL : 5432
+```
+
+Artinya PostgreSQL di dalam container bisa diakses melalui port `5432` dari komputer kamu.
+
+Redis:
+
+```text
+0.0.0.0:6379->6379/tcp
+```
+
+Artinya:
+
+```text
+Windows : 6379
+    ↓
+Docker Redis : 6379
+```
+
+Nanti kita pelajari **port mapping** lebih dalam.
+
+---
+
+### `NAMES`
+
+Kamu punya:
+
+```text
+postgres
+redis
+```
+
+Ini nama container.
+
+Jadi kamu bisa menjalankan command menggunakan nama:
+
+```powershell
+docker logs postgres
+```
+
+atau:
+
+```powershell
+docker logs redis
+```
+
+Tidak perlu menghafalkan Container ID.
+
+---
+
+# 4. Sekarang lihat `docker ps -a`
+
+Ini menarik.
+
+Kamu punya:
+
+```text
+ubuntu
+ubuntu
+postgres
+logstash
+kafka
+kibana
+elasticsearch
+zookeeper
+stirling-pdf
+redis
+gotenberg
+```
+
+Tetapi hanya:
+
+```text
+postgres
+redis
+```
+
+yang statusnya:
+
+```text
+Up
+```
+
+Yang lainnya:
+
+```text
+Exited
+```
+
+Jadi sekarang kamu sudah melihat perbedaan:
+
+```text
+docker ps
+      ↓
+yang sedang berjalan
+
+docker ps -a
+      ↓
+SEMUA container
+      ↓
+yang berjalan + yang berhenti
+```
+
+---
+
+# 5. `Exited (137)` itu apa?
+
+Kamu punya Kafka:
+
+```text
+kafka
+Exited (137)
+```
+
+Belum perlu kita bahas mendalam.
+
+Untuk sementara cukup tahu:
+
+> `Exited` = container berhenti.
+
+Nanti ketika kita masuk ke **debugging Docker**, baru kita pelajari kenapa container bisa berhenti dan bagaimana melihat penyebabnya menggunakan:
+
+```powershell
+docker logs
+```
+
+---
+
+# 6. Sekarang `docker images`
+
+Ini bagian yang sangat bagus untuk belajar.
+
+Kamu memiliki banyak image:
+
+```text
+postgres:16-alpine
+redis:6.0.8
+postgres:15
+postgres:17
+kafka
+elasticsearch
+kibana
+...
+```
+
+Ingat konsep kita:
+
+```text
+IMAGE
+  ↓
+membuat
+  ↓
+CONTAINER
+```
+
+Misalnya:
+
+```text
+postgres:16-alpine
+        ↓
+     postgres
+```
+
+Dan:
+
+```text
+redis:6.0.8
+        ↓
+       redis
+```
+
+---
+
+# 7. Ada hal menarik di sini
+
+Kamu memiliki banyak versi PostgreSQL:
+
+```text
+postgres:12
+postgres:12-alpine
+postgres:12.12
+postgres:15
+postgres:15-alpine
+postgres:16
+postgres:16-alpine
+postgres:17
+```
+
+Artinya Docker bisa menyimpan **banyak image/versi** di komputer yang sama.
+
+Contohnya:
+
+```text
+Docker
+│
+├── PostgreSQL 12
+├── PostgreSQL 15
+├── PostgreSQL 16
+└── PostgreSQL 17
+```
+
+Kemudian kamu bisa membuat container berdasarkan image tertentu.
+
+Misalnya:
+
+```text
+postgres:16-alpine
+        ↓
+postgres container
+```
+
+---
+
+# 🧠 Sekarang ada satu konsep penting
+
+Kamu tadi menjawab:
+
+> "1 container hanya untuk 1 image?"
+
+Kita sudah tahu:
+
+**1 Image → bisa banyak Container.**
+
+Tapi sekarang dari komputer kamu kita bisa melihat contohnya.
+
+Misalnya kamu punya:
+
+```text
+redis:6.0.8
+```
+
+Image tersebut bisa digunakan untuk:
+
+```text
+redis:6.0.8
+      │
+      ├── redis-dev
+      ├── redis-test
+      └── redis-staging
+```
+
+Jadi:
+
+```text
+IMAGE
+  │
+  ├── CONTAINER
+  ├── CONTAINER
+  └── CONTAINER
+```
+
+---
+
+# 🎯 Jangan hapus apa pun dulu
+
+Karena Docker kamu sedang digunakan untuk project, **jangan menjalankan**:
+
+```powershell
+docker system prune
+```
+
+atau:
+
+```powershell
+docker image prune
+```
+
+atau menghapus container sembarangan.
+
+Kita sedang belajar menggunakan environment yang sudah kamu punya.
+
+---
+
+# 🧪 Praktik berikutnya
+
+Sekarang kita akan melakukan **praktik pertama yang aman**.
+
+Kita akan mengambil **Nginx Image** dan membuat container baru.
+
+Jalankan:
+
+```powershell
+docker pull nginx
+```
+
+Perintah ini artinya:
+
+> "Docker, ambil Image `nginx` dari Docker Registry."
+
+Alurnya:
+
+```text
+Docker Hub
+    ↓
+nginx Image
+    ↓
+Laptop kamu
+```
+
+Setelah selesai, jalankan:
+
+```powershell
+docker images
+```
+
+Lalu kirim hasilnya.
+
+**Belum perlu `docker run` dulu.** Kita pahami dulu apa yang terjadi setelah `docker pull`. Setelah itu baru kita buat container pertama kita. 🚀
+
+---
+
+---
+
+Mantap 👍 Berarti **`docker pull nginx` berhasil**.
+
+Sekarang kita manfaatkan hasil ini untuk memahami satu konsep penting.
+
+## 🧠 Apa yang baru saja terjadi?
+
+Sebelumnya kamu **belum punya**:
+
+```text
+nginx:latest
+```
+
+Setelah menjalankan:
+
+```powershell
+docker pull nginx
+```
+
+sekarang muncul:
+
+```text
+nginx:latest
+05b8cb60c354
+253MB
+```
+
+Artinya:
+
+```text
+Docker Registry
+      │
+      │ docker pull nginx
+      ↓
+nginx IMAGE
+      │
+      │
+      ↓
+Laptop kamu
+```
+
+**Belum ada container Nginx.**
+
+Saat ini baru ada **IMAGE**.
+
+---
+
+## 🔥 Ini perbedaan penting
+
+Sekarang kondisi Docker kamu kira-kira:
+
+```text
+IMAGES
+│
+├── nginx:latest       ← baru kita download
+├── postgres:16-alpine
+├── redis:6.0.8
+├── kafka
+├── elasticsearch
+└── dll
+```
+
+Sedangkan container:
+
+```text
+CONTAINERS
+│
+├── postgres           ← berjalan
+├── redis              ← berjalan
+├── kafka              ← berhenti
+├── elasticsearch      ← berhenti
+└── dll
+```
+
+Perhatikan:
+
+```text
+nginx:latest
+```
+
+**ada di IMAGE**
+
+tetapi belum ada:
+
+```text
+nginx container
+```
+
+---
+
+# 🧪 Sekarang kita buat Container Nginx
+
+Ini command pertama yang benar-benar akan membuat container:
+
+```powershell
+docker run -d --name belajar-nginx -p 8080:80 nginx
+```
+
+Jangan takut, kita bedah dulu.
+
+### `docker run`
+
+Artinya:
+
+> **Buat container dari sebuah image dan jalankan.**
+
+---
+
+### `-d`
+
+Artinya:
+
+> Jalankan di background.
+
+Jadi terminal kamu tetap bisa digunakan.
+
+---
+
+### `--name belajar-nginx`
+
+Kita memberikan nama:
+
+```text
+belajar-nginx
+```
+
+Kalau tidak diberikan, Docker biasanya membuat nama random seperti:
+
+```text
+sweet_hodgkin
+```
+
+Seperti yang kamu punya tadi. 😄
+
+---
+
+### `-p 8080:80`
+
+Ini **port mapping**.
+
+Artinya:
+
+```text
+Komputer kamu        Container
+    8080       →        80
+```
+
+Jadi:
+
+```text
+localhost:8080
+       ↓
+Nginx container :80
+```
+
+Kita akan pelajari port lebih dalam nanti.
+
+---
+
+### `nginx`
+
+Ini adalah **image yang digunakan**.
+
+Jadi keseluruhannya:
+
+```text
+nginx IMAGE
+     ↓
+docker run
+     ↓
+belajar-nginx CONTAINER
+     ↓
+Nginx berjalan
+```
+
+---
+
+## 🚀 Sekarang jalankan
+
+```powershell
+docker run -d --name belajar-nginx -p 8080:80 nginx
+```
+
+Kemudian:
+
+```powershell
+docker ps
+```
+
+Kirim hasil `docker ps`-nya ke saya.
+
+**Belum perlu menjalankan command lain.** Setelah itu kita akan lihat bersama bagaimana `nginx:latest` yang tadi hanya berupa **image** sekarang berubah menjadi **container yang berjalan**.
+
+---
+
+---
+
+Mantap 👍 **berhasil.** Docker Nginx kamu sekarang sudah berjalan.
+
+Dari output:
+
+```text
+8bd65efcc5cc   nginx   ...   Up 5 seconds   0.0.0.0:8080->80/tcp   belajar-nginx
+```
+
+Artinya:
+
+- `nginx` → image yang digunakan
+- `belajar-nginx` → nama container
+- `Up 5 seconds` → container sedang hidup
+- `8080->80` → port Windows `8080` diarahkan ke port Nginx `80`
+- `0.0.0.0:8080` → bisa diakses melalui port 8080 di komputer kamu
+
+### 🧠 Gambaran sederhananya
+
+```text
+Browser
+   ↓
+localhost:8080
+   ↓
+Docker
+   ↓
+belajar-nginx
+   ↓
+Nginx :80
+   ↓
+Halaman Nginx
+```
+
+Sekarang coba buka browser:
+
+**http://localhost:8080**
+
+Kalau muncul halaman:
+
+> Welcome to nginx!
+
+berarti kita sudah berhasil membuat **container pertama dari image Nginx** 🎉
+
+### Setelah itu kita belajar satu hal penting
+
+Jalankan:
+
+```powershell
+docker stop belajar-nginx
+```
+
+Lalu:
+
+```powershell
+docker ps
+```
+
+Kemungkinan `belajar-nginx` sudah tidak muncul karena `docker ps` hanya menampilkan container yang **sedang berjalan**.
+
+Kemudian jalankan:
+
+```powershell
+docker ps -a
+```
+
+Nah, `belajar-nginx` akan muncul lagi dengan status `Exited`.
+
+Ini penting untuk memahami perbedaan:
+
+```text
+docker ps       → container yang sedang hidup
+docker ps -a    → semua container
+```
+
+**Jangan hapus container PostgreSQL dan Redis kamu.** Kita cukup latihan menggunakan `belajar-nginx`.
+
+---
+
+---
+
+Betul 👍 Kita lanjut **pelan-pelan**, dan saya ingat target latihan kita: setelah selesai, **container `belajar-nginx` dan image `nginx` kita hapus**. PostgreSQL dan Redis **jangan disentuh**.
+
+## Langkah berikutnya: Stop → Start lagi
+
+Sekarang kita belajar perbedaan **stop** dan **start**.
+
+### 1. Stop container
+
+Jalankan:
+
+```powershell
+docker stop belajar-nginx
+```
+
+Lalu:
+
+```powershell
+docker ps
+```
+
+`belajar-nginx` harusnya **hilang dari `docker ps`** karena sudah berhenti.
+
+---
+
+### 2. Cek semua container
+
+Jalankan:
+
+```powershell
+docker ps -a
+```
+
+Kamu akan melihat kira-kira:
+
+```text
+belajar-nginx    nginx    Exited
+postgres         postgres:16-alpine    Up
+redis            redis:6.0.8            Up
+```
+
+Artinya:
+
+```text
+docker ps
+    ↓
+yang sedang hidup
+
+docker ps -a
+    ↓
+semua container
+```
+
+---
+
+### 3. Hidupkan kembali container
+
+Sekarang:
+
+```powershell
+docker start belajar-nginx
+```
+
+Lalu:
+
+```powershell
+docker ps
+```
+
+`belajar-nginx` akan muncul lagi sebagai `Up`.
+
+Coba buka:
+
+```text
+http://localhost:8080
+```
+
+Nginx harus muncul lagi.
+
+---
+
+## 🧠 Jadi sekarang kamu sudah mengenal
+
+```text
+docker run
+    ↓
+BUAT container + JALANKAN
+
+docker stop
+    ↓
+MATIKAN container
+
+docker start
+    ↓
+NYALAKAN kembali container
+
+docker ps
+    ↓
+lihat container yang hidup
+
+docker ps -a
+    ↓
+lihat semua container
+```
+
+**Jangan hapus apa pun dulu.** Setelah kamu berhasil `stop → start`, kita lanjut ke **`docker rm` untuk menghapus container**, lalu **`docker rmi` untuk menghapus image nginx**. Ini sekalian latihan bersih-bersih Docker.
+
+---
+
+---
+
+Sip 👍 Kita lanjut **step berikutnya: hapus container Nginx**.
+
+Karena nanti kita juga akan hapus **image `nginx`**, urutannya harus:
+
+```text
+Container → hapus dulu
+Image     → baru hapus
+```
+
+### 1️⃣ Pastikan Nginx hidup
+
+Jalankan:
+
+```powershell
+docker ps
+```
+
+Kalau ada:
+
+```text
+belajar-nginx   nginx   Up ...
+```
+
+lanjut.
+
+### 2️⃣ Stop Nginx
+
+```powershell
+docker stop belajar-nginx
+```
+
+### 3️⃣ Hapus container
+
+```powershell
+docker rm belajar-nginx
+```
+
+Lalu cek:
+
+```powershell
+docker ps -a
+```
+
+`belajar-nginx` **sudah tidak boleh ada**.
+
+---
+
+### 🧠 Bedanya `stop` dan `rm`
+
+Bayangkan:
+
+```text
+stop
+↓
+Rumahnya masih ada
+Orangnya keluar
+
+rm
+↓
+Rumahnya dibongkar
+```
+
+Jadi:
+
+```text
+docker stop belajar-nginx
+        ↓
+Container mati
+
+docker rm belajar-nginx
+        ↓
+Container dihapus
+```
+
+**Jangan jalankan `docker rm postgres` atau `docker rm redis`**, kita hanya menghapus `belajar-nginx`.
+
+Setelah `docker rm belajar-nginx` berhasil, **jangan hapus image dulu**. Kirim hasil `docker ps -a` ke saya. Kita lanjut **menghapus image `nginx`** setelah itu.
+
+---
+
+---
+
+Mantap 👍 **`belajar-nginx` sudah benar-benar terhapus.**
+
+Saya lihat di `docker ps -a`, memang sudah **tidak ada**:
+
+```text
+belajar-nginx
+```
+
+Container lain seperti PostgreSQL, Redis, Kafka, Elasticsearch, dll **jangan kita hapus**, karena kemungkinan masih digunakan project kamu.
+
+Sekarang kita masuk ke langkah terakhir untuk latihan Nginx:
+
+## 1️⃣ Cek image Nginx
+
+Jalankan:
+
+```powershell
+docker images
+```
+
+Cari baris:
+
+```text
+nginx    latest    ...
+```
+
+Kalau masih ada, itu normal.
+
+### Kenapa image masih ada?
+
+Karena tadi kita hanya menghapus **container**.
+
+Ingat:
+
+```text
+IMAGE
+  ↓
+docker run
+  ↓
+CONTAINER
+```
+
+Ketika kita menjalankan:
+
+```powershell
+docker rm belajar-nginx
+```
+
+yang dihapus hanya:
+
+```text
+❌ Container belajar-nginx
+```
+
+Sedangkan:
+
+```text
+✅ Image nginx
+```
+
+masih ada.
+
+---
+
+## 2️⃣ Hapus image Nginx
+
+**Tapi sebelum menjalankan ini, kirim dulu hasil `docker images` ke saya.**
+
+Kita cek dulu supaya tidak salah hapus image lain.
+
+Jalankan:
+
+```powershell
+docker images
+```
+
+Lalu kirim hasilnya ke saya.
+
+Setelah itu kita akan lakukan:
+
+```text
+Container nginx → sudah dihapus ✅
+          ↓
+Image nginx → kita hapus ⏭️
+```
+
+Dan setelah image-nya terhapus, latihan **Image & Container dasar** kita selesai. 🎯
+
+---
+
+---
+
+Bagus 👍 Sekarang sudah jelas. Image `nginx:latest` **tidak sedang dipakai** karena kolom `U In Use` tidak muncul di baris Nginx.
+
+Jadi aman untuk latihan kita hapus **hanya image Nginx**.
+
+### 1️⃣ Hapus image Nginx
+
+Jalankan:
+
+```powershell
+docker rmi nginx:latest
+```
+
+Kalau berhasil, biasanya muncul kira-kira:
+
+```text
+Untagged: nginx:latest
+Deleted: sha256:...
+```
+
+### 2️⃣ Cek lagi
+
+```powershell
+docker images
+```
+
+Pastikan:
+
+```text
+nginx:latest
+```
+
+sudah tidak ada.
+
+---
+
+### 🧠 Sekarang bedakan 4 perintah ini
+
+| Perintah | Fungsi |
+|---|---|
+| `docker run` | Buat + jalankan container |
+| `docker stop` | Matikan container |
+| `docker rm` | Hapus container |
+| `docker rmi` | Hapus image |
+
+Urutan latihan kita tadi:
+
+```text
+docker pull nginx
+       ↓
+nginx IMAGE
+       ↓
+docker run
+       ↓
+belajar-nginx CONTAINER
+       ↓
+docker stop
+       ↓
+docker rm
+       ↓
+belajar-nginx ❌
+       ↓
+docker rmi nginx
+       ↓
+nginx IMAGE ❌
+```
+
+⚠️ **Jangan gunakan `docker system prune` dulu**, karena Docker kamu punya banyak image/container project seperti PostgreSQL, Redis, Kafka, Elasticsearch, dan lainnya.
+
+Jalankan **hanya**:
+
+```powershell
+docker rmi nginx:latest
+```
+
+Setelah berhasil, kirim hasilnya. Kita lanjut ke materi **Dockerfile**, yang menurut saya merupakan langkah paling penting berikutnya.
+
+---
+
+---
+
+Mantap 👍 **berhasil.**
+
+Sekarang `nginx:latest` sudah **tidak ada** di daftar `docker images`.
+
+Jadi latihan kita benar-benar bersih:
+
+```text
+nginx IMAGE       ❌ sudah dihapus
+belajar-nginx     ❌ sudah dihapus
+PostgreSQL        ✅ aman
+Redis             ✅ aman
+Kafka             ✅ aman
+Elasticsearch     ✅ aman
+```
+
+Dan kamu sekarang sudah memahami siklus dasar Docker:
+
+```text
+IMAGE
+  │
+  │ docker run
+  ▼
+CONTAINER
+  │
+  ├── docker stop → berhenti
+  │
+  ├── docker start → hidup lagi
+  │
+  └── docker rm → hapus container
+
+IMAGE
+  │
+  └── docker rmi → hapus image
+```
+
+## 🚀 Selanjutnya: Dockerfile
+
+Ini bagian yang **sangat penting** karena nanti kita akan membuat image Docker **sendiri**, bukan cuma mengambil image dari Docker Hub.
+
+Contohnya nanti:
+
+```text
+Dockerfile
+    ↓
+docker build
+    ↓
+Image buatan kita
+    ↓
+docker run
+    ↓
+Container
+```
+
+Kita akan membuat contoh yang sangat sederhana dulu, **tidak menyentuh project DigiAsk**.
+
+### Langkah pertama
+
+Buat folder latihan:
+
+```powershell
+mkdir belajar-dockerfile
+cd belajar-dockerfile
+```
+
+Lalu cek:
+
+```powershell
+pwd
+```
+
+**Berhenti sampai sini dulu.** Kirim hasil `pwd` ke saya, kemudian kita buat `Dockerfile` pertama kamu.
+
+---
+
+---
+
+Perfect 👍 Posisi kita sudah benar:
+
+```text
+C:\Users\Admin\Desktop\belajar-dockerfile
+```
+
+Sekarang kita mulai **Dockerfile pertama**. Kita buat yang super sederhana dulu supaya kamu paham konsepnya.
+
+## 1. Buat file bernama `Dockerfile`
+
+Di PowerShell, jalankan:
+
+```powershell
+New-Item Dockerfile
+```
+
+Cek:
+
+```powershell
+dir
+```
+
+Harus ada:
+
+```text
+Dockerfile
+```
+
+### 2. Isi Dockerfile
+
+Buka folder ini di VS Code:
+
+```powershell
+code .
+```
+
+Kemudian buat isi `Dockerfile` menjadi:
+
+```dockerfile
+FROM nginx
+```
+
+Sederhana sekali 😄
+
+Artinya:
+
+> "Saya mau membuat image baru berdasarkan image `nginx`."
+
+Jadi:
+
+```text
+Dockerfile
+    │
+    │ FROM nginx
+    ▼
+Image nginx
+```
+
+Tapi ingat, **kita tidak akan menggunakan image ini untuk project kamu**. Ini murni latihan.
+
+### 3. Jangan `build` dulu
+
+Setelah kamu membuat:
+
+```dockerfile
+FROM nginx
+```
+
+**berhenti dulu di sini.**
+
+Kirim ke saya kalau `Dockerfile` sudah dibuat dan isinya `FROM nginx`.
+
+Setelah itu kita akan menjalankan:
+
+```powershell
+docker build ...
+```
+
+dan saya jelaskan **apa yang sebenarnya terjadi di belakang layar saat `docker build`**.
+
+---
+
+---
+
+Betul 👍 **Dockerfile pertama kamu sudah benar.**
+
+Isinya:
+
+```dockerfile
+FROM nginx
+```
+
+Sekarang kita lakukan **`docker build`**.
+
+## 1. Build image
+
+Pastikan terminal masih berada di:
+
+```text
+C:\Users\Admin\Desktop\belajar-dockerfile
+```
+
+Lalu jalankan:
+
+```powershell
+docker build -t belajar-nginx .
+```
+
+Perhatikan bagian ini:
+
+```text
+-t belajar-nginx
+```
+
+Artinya kita memberi nama image:
+
+```text
+belajar-nginx
+```
+
+Sedangkan:
+
+```text
+.
+```
+
+artinya:
+
+> Docker gunakan folder yang sedang saya buka sekarang sebagai **build context**.
+
+Jadi alurnya:
+
+```text
+C:\Users\Admin\Desktop\belajar-dockerfile
+              │
+              ├── Dockerfile
+              │       │
+              │       │ FROM nginx
+              │       ▼
+              │   docker build
+              │       │
+              │       ▼
+              └── IMAGE: belajar-nginx
+```
+
+### 2. Setelah selesai
+
+Jalankan:
+
+```powershell
+docker images
+```
+
+Nanti kita cari:
+
+```text
+belajar-nginx
+```
+
+⚠️ **Jangan jalankan `docker run` dulu.**
+
+Jalankan hanya:
+
+```powershell
+docker build -t belajar-nginx .
+```
+
+Lalu kirim hasilnya ke saya. Kita lihat bersama apa yang terjadi saat Docker membuat image.
+
+---
+
+---
+
+Mantap! 🎉 **Berhasil.** Sekarang kamu sudah membuat **image Docker sendiri** bernama `belajar-nginx`.
+
+Perhatikan:
+
+```text
+belajar-nginx:latest    08c5d7841346    250MB
+```
+
+## 🧠 Apa yang sebenarnya terjadi?
+
+Kita punya:
+
+```text
+Dockerfile
+   │
+   │ FROM nginx
+   ▼
+docker build -t belajar-nginx .
+   │
+   ▼
+IMAGE: belajar-nginx
+```
+
+Yang menarik: kamu tadi **sudah menghapus `nginx:latest`**, tetapi ketika `docker build` dijalankan:
+
+```dockerfile
+FROM nginx
+```
+
+Docker membutuhkan image `nginx`, lalu menggunakan layer yang diperlukan untuk membuat:
+
+```text
+belajar-nginx
+```
+
+Makanya sekarang kamu punya:
+
+```text
+belajar-nginx:latest
+```
+
+---
+
+## 🔥 Sekarang kita buktikan image ini bisa membuat container
+
+Jalankan:
+
+```powershell
+docker run -d --name belajar-nginx-2 -p 8080:80 belajar-nginx
+```
+
+Perhatikan perbedaannya:
+
+Sebelumnya kita menggunakan:
+
+```powershell
+docker run ... nginx
+```
+
+Sekarang:
+
+```powershell
+docker run ... belajar-nginx
+```
+
+Artinya kita menjalankan **image buatan kita sendiri**.
+
+Setelah itu:
+
+```powershell
+docker ps
+```
+
+Dan buka:
+
+```text
+http://localhost:8080
+```
+
+Harus muncul halaman Nginx lagi. 😎
+
+### Alur lengkapnya sekarang
+
+```text
+Dockerfile
+   │
+   │ docker build
+   ▼
+belajar-nginx IMAGE
+   │
+   │ docker run
+   ▼
+belajar-nginx-2 CONTAINER
+   │
+   ▼
+Nginx berjalan
+```
+
+**Jangan hapus apa-apa dulu.** Setelah kita berhasil menjalankan container ini, kita akan belajar satu hal yang sangat penting: **mengubah isi Docker image dengan `COPY`**, baru setelah itu kita bersihkan container + image latihan kita.
+
+---
+
+---
+
+Mantap! Kita lanjut **pelan-pelan tapi sampai benar-benar paham**, bukan cuma copy-paste.
+
+Sekarang kita berada di tahap:
+
+```text
+Dockerfile
+   ↓
+docker build
+   ↓
+Image: belajar-nginx
+```
+
+Sekarang waktunya mengubah:
+
+```text
+Image
+  ↓
+Container
+```
+
+### 🚀 Step berikutnya
+
+Jalankan:
+
+```powershell
+docker run -d --name belajar-nginx-2 -p 8080:80 belajar-nginx
+```
+
+Lalu:
+
+```powershell
+docker ps
+```
+
+Kalau muncul:
+
+```text
+belajar-nginx-2    belajar-nginx    Up ...
+```
+
+berarti **image buatan kamu berhasil menjadi container**. 🎉
+
+Kemudian buka:
+
+```text
+http://localhost:8080
+```
+
+Kalau halaman **Welcome to nginx!** muncul, berarti semuanya sukses.
+
+**Kirim hasil `docker ps` ke saya.** Setelah itu kita masuk ke bagian yang lebih seru: membuat **website HTML kita sendiri di dalam Docker**, sehingga tidak lagi memakai halaman default Nginx. 🔥
+
+---
