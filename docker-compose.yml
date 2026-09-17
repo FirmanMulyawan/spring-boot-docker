@@ -1,0 +1,26 @@
+services:
+
+  nginx:
+    image: nginx
+    container_name: belajar-compose-nginx
+    ports:
+      - "8083:80"
+
+  redis:
+    image: redis:6.0.8
+    container_name: belajar-compose-redis
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: belajar-compose-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: belajar_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - belajar-postgres-data:/var/lib/postgresql/data
+
+volumes:
+  belajar-postgres-data:

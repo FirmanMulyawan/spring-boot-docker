@@ -2960,3 +2960,1071 @@ C:\...\data                  /data
 
 Setelah ini kita bisa masuk ke **Docker Network**, yang menurut saya penting banget untuk memahami kenapa **Spring Boot bisa connect ke PostgreSQL/Redis menggunakan nama container**, bukan `localhost`.
 
+---
+
+# LEVEL 6 — Docker Network 🌐
+
+Sekarang kita belajar **bagaimana Container berkomunikasi dengan Container lain**.
+
+Penting nanti untuk:
+
+```text
+Spring Boot
+   ↓
+PostgreSQL
+   ↓
+Redis
+   ↓
+Kafka
+```
+
+## 1. Analogi paling sederhana
+
+Docker seperti kompleks perumahan — container yang berada di **network Docker yang sama** bisa saling berkomunikasi.
+
+```text
+          Docker Network
+     ┌──────────────────────┐
+     │  🏠 App              │
+     │     ├── 🏠 PostgreSQL│
+     │     └── 🏠 Redis     │
+     └──────────────────────┘
+```
+
+## 2. Buat Network
+
+```powershell
+docker network create belajar-network
+```
+
+Cek:
+
+```powershell
+docker network ls
+```
+
+```text
+NETWORK ID     NAME               DRIVER    SCOPE
+xxxxxx         bridge             bridge    local
+xxxxxx         host               host      local
+xxxxxx         none               null      local
+xxxxxx         belajar-network    bridge    local
+```
+
+## 3. Apa itu `bridge`?
+
+> **Bridge = jenis network Docker yang memungkinkan container-container berkomunikasi dalam network tersebut.**
+
+## 4. Container pertama (Nginx)
+
+Pakai image yang sudah ada: `belajar-nginx:v2`.
+
+```powershell
+docker run -d --name belajar-nginx-network --network belajar-network -p 8082:80 belajar-nginx:v2
+```
+
+- `--network belajar-network` = masukkan container ke `belajar-network`.
+- `docker ps` → `belajar-nginx-network`, `0.0.0.0:8082->80/tcp`.
+- Buka `http://localhost:8082` → website muncul. 🚀
+
+## 5. Container kedua (client Alpine)
+
+```powershell
+docker run -it --name belajar-client --network belajar-network alpine sh
+```
+
+```text
+                 belajar-network
+                       │
+            ┌──────────┴──────────┐
+            ▼                     ▼
+   belajar-nginx-network    belajar-client
+        🌐 Nginx                 🐧 Alpine
+```
+
+## 6. 🔥 Bagian paling penting
+
+Dari dalam `belajar-client`:
+
+```sh
+wget -qO- http://belajar-nginx-network
+```
+
+- Bukan `localhost`, tetapi **nama container** — karena Docker Network punya **DNS internal** yang otomatis mengenali nama container.
+
+```text
+belajar-client
+   │ HTTP request
+   ▼
+belajar-nginx-network
+   ▼
+ Nginx
+```
+
+Kalau berhasil → HTML website muncul:
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Belajar Docker</title>
+</head>
+<body>
+    <h1>Halo Docker! 🚀</h1>
+</body>
+</html>
+```
+
+🎉 **Container A berhasil berkomunikasi dengan Container B melalui Docker Network.**
+
+## ⭐ Kenapa ini penting untuk Spring Boot?
+
+```text
+Docker Network
+├── spring-boot
+├── postgres
+├── redis
+└── kafka
+```
+
+Spring Boot **tidak perlu** `DB_HOST=localhost` — cukup `DB_HOST=postgres` (nama container PostgreSQL).
+
+```text
+Spring Boot → jdbc → postgres → PostgreSQL
+Spring Boot → redis connection → redis
+```
+
+Ini sangat relevan untuk environment **Spring Boot + PostgreSQL + Redis + Kafka**.
+
+## 🔥 Praktik: 3 langkah
+
+```powershell
+docker network create belajar-network
+docker run -d --name belajar-nginx-network --network belajar-network -p 8082:80 belajar-nginx:v2
+docker run -it --name belajar-client --network belajar-network alpine sh
+```
+
+Setelah muncul `/ #`:
+
+```sh
+wget -qO- http://belajar-nginx-network
+```
+
+Lanjut berikutnya: memahami **kenapa `localhost` berbeda dengan nama container** di Docker Network.
+
+---
+
+# ⭐ `localhost` vs Nama Container
+
+🎉 Eksperimen `wget -qO- http://belajar-nginx-network` **berhasil** → Docker Network bekerja: **DNS internal Docker** menerjemahkan **nama container → alamat IP**.
+
+```text
+belajar-client
+   │ HTTP request http://belajar-nginx-network
+   ▼
+belajar-nginx-network
+   ▼
+ Nginx → HTML website
+```
+
+## Eksperimen: `localhost` dari dalam container
+
+Masih di dalam `belajar-client`:
+
+```sh
+wget -qO- http://localhost:80
+```
+
+Hasilnya:
+
+```text
+wget: can't connect to remote host: Connection refused
+```
+
+Kenapa? **`localhost` = container yang sedang kamu tempati** (`belajar-client`), **bukan** `belajar-nginx-network`.
+
+```text
+❌ localhost
+belajar-client → localhost → belajar-client sendiri
+
+✅ Nama container
+belajar-client → http://belajar-nginx-network → belajar-nginx-network → Nginx
+```
+
+> Salah satu konsep Docker yang **wajib banget kamu pahami**.
+
+## Hubungannya dengan Spring Boot
+
+```text
+belajar-network
+├── Spring Boot
+│      │ database connection
+│      ▼
+└── postgres
+```
+
+Konfigurasi yang benar:
+
+```properties
+spring.datasource.url=jdbc:postgresql://postgres:5432/belajar_db
+```
+
+**bukan** `jdbc:postgresql://localhost:5432/belajar_db` — karena `postgres` adalah **nama container/service** di Docker Network.
+
+## Pengecualian penting
+
+Kalau **Spring Boot berjalan langsung di Windows**, sedangkan PostgreSQL di Docker → `localhost:5432` bisa benar (Spring Boot ada di host/Windows).
+
+| Kondisi | Host database |
+|---|---|
+| Spring Boot di Windows → PostgreSQL Docker | `localhost` |
+| Spring Boot Docker → PostgreSQL Docker | `postgres` |
+| Container A → Container B | nama container |
+| Container → dirinya sendiri | `localhost` |
+
+💡 Ini menjelaskan banyak **error connection** yang sering muncul saat belajar Docker + Spring Boot.
+
+## 🚀 Selanjutnya: `docker network inspect`
+
+Melihat sendiri container mana saja yang masuk ke network dan **IP masing-masing**.
+
+---
+
+# 🔎 `docker network inspect` — bukti dua container satu network
+
+🎯 Eksperimen `localhost` terbukti: tidak ada aplikasi yang **listen di port 80** pada `belajar-client` → `Connection refused`. Sedangkan `wget http://belajar-nginx-network` berhasil karena **Docker DNS**:
+
+```text
+belajar-client
+   │ http://belajar-nginx-network
+   ▼
+Docker DNS
+   ▼
+IP belajar-nginx-network
+   ▼
+Nginx :80
+```
+
+## Cek buktinya
+
+Keluar dari container (`exit`), lalu di PowerShell Windows:
+
+```powershell
+docker network inspect belajar-network
+```
+
+Output-nya panjang — cari bagian `"Containers": {`:
+
+```text
+"Containers": {
+    "...": {
+        "Name": "belajar-nginx-network",
+        "IPv4Address": "172.xx.xx.x/16"
+    },
+    "...": {
+        "Name": "belajar-client",
+        "IPv4Address": "172.xx.xx.x/16"
+    }
+}
+```
+
+Artinya kedua container berada di **network yang sama**:
+
+```text
+        belajar-network
+              │
+       ┌──────┴──────┐
+       ▼             ▼
+    Nginx          Client
+172.xx.xx.x     172.xx.xx.x
+```
+
+Docker juga membuat **DNS** sehingga **nama container** bisa dipakai sebagai alamat tujuan dari container lain.
+
+## 🚀 Selanjutnya
+
+- Bedah isi `network inspect` bagian per bagian: `Containers`, `IPv4Address`, `Gateway` — 👇 di bawah ini.
+- Lalu konsep penting berikutnya: **Docker Compose**. 🚀
+
+## 🔍 Bedah `docker network inspect` bagian per bagian
+
+🎯 Output inspect benar, tapi ada hal menarik: `belajar-network` hanya berisi **`belajar-nginx-network`**, tidak ada `belajar-client` — karena sudah `exit` → container **Exited** tidak tampil sebagai endpoint aktif di network.
+
+**1. `Name`** → `belajar-network`, network yang kita buat dengan `docker network create belajar-network`.
+
+**2. `Driver: bridge`** → jenis network-nya:
+
+> **Bridge = network Docker yang memungkinkan container saling berkomunikasi.**
+
+**3. `Subnet`** → `172.19.0.0/16` — Docker membuat jaringan internal; container di network ini mendapat IP dari rentang tersebut:
+
+```text
+172.19.0.0
+     ├── 172.19.0.1
+     ├── 172.19.0.2
+     └── ...
+```
+
+**4. `Gateway`** → `172.19.0.1` = **pintu keluar/gerbang network**:
+
+```text
+       Gateway 172.19.0.1
+              │
+      ┌───────┴────────┐
+      │ belajar-network│
+      │  Nginx 172.19.0.2
+      └────────────────┘
+```
+
+**5. ⭐ `Containers`** (bagian terpenting) → daftar container aktif + IP:
+
+```text
+"Containers": {
+    "...": {
+        "Name": "belajar-nginx-network",
+        "IPv4Address": "172.19.0.2/16"
+    }
+}
+```
+
+Inilah bukti kenapa `wget http://belajar-nginx-network` berhasil:
+
+```text
+belajar-nginx-network → 172.19.0.2 → Nginx :80
+```
+
+## 6. Kenapa `belajar-client` tidak ada?
+
+Setelah `exit`, container berhenti. `docker ps -a` → `belajar-client  Exited (0)` — **masih ada, hanya tidak aktif** di network.
+
+Buktikan lagi:
+
+```powershell
+docker start -ai belajar-client
+```
+
+- `start` → jalankan kembali; `-a` → attach ke output; `-i` → interactive → kembali ke `/ #`.
+
+Dari dalam container: `wget -qO- http://belajar-nginx-network` → berhasil lagi. Lalu di **PowerShell baru**:
+
+```powershell
+docker network inspect belajar-network
+```
+
+Bagian `Containers` sekarang harus **2 container**:
+
+```text
+Containers
+├── belajar-nginx-network → 172.19.0.2
+└── belajar-client        → 172.19.0.3
+```
+
+IP `belajar-client` kemungkinan `172.19.0.3`, tapi **jangan diasumsikan** — lihat hasil `inspect`, Docker yang menentukan.
+
+## 🧠 Kesimpulan Network sejauh ini
+
+```text
+1. Container → 2. Network → 3. Komunikasi pakai nama container
+```
+
+```text
+belajar-client → http://belajar-nginx-network → 172.19.0.2 → Nginx :80
+```
+
+Ini dasar dari Spring Boot + postgres + redis + kafka di Docker.
+
+## 🚀 Selanjutnya: Docker Compose
+
+Berhenti membuat container satu-per-satu dengan `docker run` → **Spring Boot + PostgreSQL + Redis** dalam **satu file `docker-compose.yml`**.
+
+---
+
+# LEVEL 7 — Docker Compose 🐳
+
+Masuk ke bagian **paling penting**: mengatur **banyak container sekaligus** tanpa `docker run` satu-per-satu (Spring Boot + PostgreSQL + Redis + Kafka + Zookeeper + Elasticsearch…).
+
+> **Docker Compose = file konfigurasi untuk mengatur banyak container sekaligus.**
+
+## Analogi
+
+```text
+Tanpa Compose:              Dengan Compose:
+docker run postgres         docker-compose.yml
+docker run redis                  │
+docker run nginx                  ▼
+docker run ...               docker compose up
+docker run ...                     │
+                                   ├── PostgreSQL
+                                   ├── Redis
+                                   └── Nginx
+```
+
+Compose seperti **"manager" container**.
+
+## Praktik pertama
+
+Folder latihan baru (agar tidak mengganggu PostgreSQL/Redis DigiAsk):
+
+```powershell
+cd "$HOME\Desktop"
+mkdir belajar-compose
+cd belajar-compose
+New-Item docker-compose.yml
+code docker-compose.yml
+```
+
+Isi `docker-compose.yml`:
+
+```yaml
+services:
+
+  nginx:
+    image: nginx
+    container_name: belajar-compose-nginx
+    ports:
+      - "8083:80"
+
+  redis:
+    image: redis:6.0.8
+    container_name: belajar-compose-redis
+```
+
+## Baca pelan-pelan
+
+- `services:` → mendefinisikan container/service yang ingin dijalankan.
+- `nginx:` → nama **service**; `image: nginx` → image yang dipakai; `container_name:` → nama container.
+- `ports: "8083:80"` → `Windows 8083 ──> container 80` → `http://localhost:8083` mengarah ke Nginx.
+- Redis sengaja **tanpa `ports:`** dulu → container dalam satu Compose bisa berkomunikasi lewat **network internal** tanpa membuka port ke Windows. 🔥
+
+## Jalankan
+
+```powershell
+docker compose up -d
+```
+
+```text
+[+] Running 3/3
+ ✔ Network belajar-compose_default
+ ✔ Container belajar-compose-nginx
+ ✔ Container belajar-compose-redis
+```
+
+😮 **Compose otomatis membuat Docker Network untuk project** (`belajar-compose_default`) — sebelumnya kita buat manual dengan `docker network create belajar-network`.
+
+Cek:
+
+```powershell
+docker compose ps   # belajar-compose-nginx Up, belajar-compose-redis Up
+docker ps           # keduanya tampil juga
+```
+
+Buka `http://localhost:8083` → **Welcome to nginx!** 🎉
+
+`docker network ls` → `belajar-compose_default` ikut muncul.
+
+```text
+           Docker Compose
+                  │
+                  ▼
+     belajar-compose_default
+         │           │
+         ▼           ▼
+      Nginx        Redis    ← satu network, bisa saling komunikasi
+```
+
+## ⭐ Konsep yang harus diingat
+
+```text
+docker-compose.yml
+        │
+        ▼
+   docker compose up
+        │
+        ├── Container 1
+        ├── Container 2
+        ├── Container 3
+        └── Network
+```
+
+- `docker compose down` → hentikan & hapus resource Compose yang dibuat project tersebut (aman untuk folder latihan ini).
+
+## 🎯 Tugas
+
+```powershell
+cd "$HOME\Desktop\belajar-compose"
+docker compose up -d
+docker compose ps
+```
+
+Selanjutnya: **PostgreSQL + Volume ke Docker Compose** — mulai mirip environment backend sungguhan. 🚀
+
+---
+
+# ✅ Hasil `docker compose ps` — berhasil 100%!
+
+```text
+belajar-compose-nginx   nginx         Up    0.0.0.0:8083->80/tcp
+belajar-compose-redis   redis:6.0.8   Up    6379/tcp
+```
+
+Compose berhasil membuat **2 container sekaligus**.
+
+## 🧠 Nama project = nama folder
+
+Output menunjukkan `Network belajar-dockerfile_default` — bukan `belajar-compose_default`, karena command dijalankan dari folder **`belajar-dockerfile`**. **Nama folder = nama project Compose.** (Tidak masalah untuk latihan 👍)
+
+Tanpa menulis network apa pun di `docker-compose.yml`, Compose otomatis membuat network dan memasukkan semua service:
+
+```text
+          Docker Compose
+                │
+                ▼
+     belajar-dockerfile_default
+         │          │
+         ▼          ▼
+      Nginx        Redis
+```
+
+## ⭐ Bukti DNS Compose
+
+Masuk ke Nginx: `docker exec -it belajar-compose-nginx sh`. Sebenarnya Redis bisa diakses via **nama service** `redis` — tapi Nginx tidak punya redis-cli, jadi pakai client kecil:
+
+```powershell
+docker run -it --rm --network belajar-dockerfile_default alpine sh
+```
+
+(`--rm` = hapus container setelah keluar.) Dari Alpine:
+
+```sh
+wget -qO- http://belajar-compose-nginx
+```
+
+→ `Welcome to nginx!` ✅
+
+## 🚨 Konsep lebih penting: pakai NAMA SERVICE, bukan `container_name`
+
+Di Compose, komunikasi biasanya lewat **nama service** (`nginx`, `redis`), bukan `container_name`:
+
+```text
+Spring Boot
+    ├── PostgreSQL → postgres:5432
+    ├── Redis      → redis:6379
+    └── Kafka      → kafka:9092
+```
+
+Bukan `localhost:5432/6379/9092`. Inilah alasan Compose sangat populer untuk backend development.
+
+## 🎯 Naik level: PostgreSQL + Volume
+
+Target berikutnya:
+
+```text
+Docker Compose
+├── Nginx
+├── Redis
+└── PostgreSQL
+       │
+       ▼
+    Volume      ← data persistence
+```
+
+Belajar sekaligus: **Compose + PostgreSQL + Volume + Network** 🔥
+
+Rapikan dulu latihan: masuk folder yang benar → `docker compose down` → `docker compose up -d` → `docker compose ps`, lalu lanjut **PostgreSQL + Volume**.
+
+---
+
+# 📁 Konfirmasi: nama project dari nama folder
+
+Output memastikan masih di folder `belajar-dockerfile` (lihat prompt PowerShell) → makanya network-nya `belajar-dockerfile_default`, bukan `belajar-compose_default`. Container tetap berhasil — tidak masalah 👍.
+
+## Langkah rapikan
+
+```powershell
+cd "$HOME\Desktop\belajar-compose"
+pwd   # harus: C:\Users\Admin\Desktop\belajar-compose
+docker compose down
+docker compose up -d
+docker compose ps
+```
+
+Network seharusnya berubah menjadi `belajar-compose_default`.
+
+### Kenapa peduli nama network?
+
+**Nama project Compose = nama folder:**
+
+```text
+Folder → belajar-compose → Docker Compose project → belajar-compose_default
+```
+
+```text
+C:\Users\Admin\Desktop\belajar-compose
+                         ↑
+                    nama project
+```
+
+## 🔜 Siap-siap PostgreSQL + Volume
+
+⚠️ **Jangan hapus apa pun yang berkaitan dengan PostgreSQL/Redis milik DigiAsk.**
+
+PostgreSQL latihan akan dibuat terpisah dengan nama:
+
+- container: `belajar-compose-postgres`
+- volume: `belajar-postgres-data`
+
+→ aman terpisah dari PostgreSQL project kamu. 🚀
+
+---
+
+# 🏠 Keputusan: folder `belajar-dockerfile` = folder utama
+
+Ternyata `belajar-dockerfile` memang folder utama pembelajaran → **tidak perlu pindah folder**. Nama network `belajar-dockerfile_default` sudah sesuai dan jadi acuan ke depannya.
+
+```text
+belajar-dockerfile
+├── Dockerfile
+├── docker-compose.yml
+├── index.html
+├── data/
+└── notes/      ← semua materi praktik Docker di satu tempat
+```
+
+# 🐘 PostgreSQL + Volume masuk Compose
+
+⚠️ PostgreSQL latihan **jangan pakai port 5432** (dipakai PostgreSQL DigiAsk) → pakai **5433**.
+
+`docker-compose.yml` baru:
+
+```yaml
+services:
+
+  nginx:
+    image: nginx
+    container_name: belajar-compose-nginx
+    ports:
+      - "8083:80"
+
+  redis:
+    image: redis:6.0.8
+    container_name: belajar-compose-redis
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: belajar-compose-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: belajar_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - belajar-postgres-data:/var/lib/postgresql/data
+
+volumes:
+  belajar-postgres-data:
+```
+
+## Perhatikan ⭐
+
+- `ports: "5433:5432"` → `localhost:5433 ────> PostgreSQL:5432` (aman, tidak bentrok dengan DigiAsk).
+- `volumes: belajar-postgres-data:/var/lib/postgresql/data` → data PostgreSQL tersimpan di **volume** → container dihapus, **data tetap ada**.
+
+## Jalankan ulang
+
+Dari folder `belajar-dockerfile`:
+
+```powershell
+docker compose down
+docker compose up -d
+docker compose ps
+```
+
+Target:
+
+```text
+belajar-compose-nginx       Up
+belajar-compose-redis       Up
+belajar-compose-postgres    Up    0.0.0.0:5433->5432/tcp
+```
+
+Selanjutnya: **connect ke PostgreSQL dengan DBeaver + buktikan data tersimpan di Volume**. 🐘🐳
+
+---
+
+# ✅ Mini environment backend jadi!
+
+```text
+Docker Compose
+├── 🌐 Nginx      → localhost:8083
+├── 🐘 PostgreSQL → localhost:5433
+└── 🔴 Redis      → internal Docker network
+```
+
+PostgreSQL sudah memakai **named volume**:
+
+```text
+belajar-compose-postgres
+        │
+        ▼
+belajar-postgres-data
+        │
+        ▼
+/var/lib/postgresql/data
+```
+
+# 🧪 Bukti PostgreSQL + Volume (uji database)
+
+**1. Masuk ke PostgreSQL** di dalam container:
+
+```powershell
+docker exec -it belajar-compose-postgres psql -U postgres -d belajar_db
+```
+
+Prompt berubah: `belajar_db=#` → kita ada di PostgreSQL container.
+
+**2. Cek database:** `\l` → muncul `belajar_db`, `postgres`, `template0`, `template1`.
+
+**3. Buat tabel:**
+
+```sql
+CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100),
+    email VARCHAR(100)
+);
+```
+
+→ `CREATE TABLE`
+
+**4. Masukkan data:**
+
+```sql
+INSERT INTO users (name, email)
+VALUES
+('Firman', 'firman@example.com'),
+('Budi', 'budi@example.com');
+```
+
+→ `INSERT 0 2`
+
+**5. Lihat data:**
+
+```sql
+SELECT * FROM users;
+```
+
+```text
+ id |  name  |       email
+----+--------+-------------------
+  1 | Firman | firman@example.com
+  2 | Budi   | budi@example.com
+```
+
+🎉 Database sungguhan di container!
+
+# 🔥 Bagian paling penting: jangan hapus volume
+
+Simulasi berikutnya — **uji ketahanan data**:
+
+```text
+Container PostgreSQL → ❌ hapus → Volume tetap ada → Container baru → Data tetap ada
+```
+
+Inilah bukti langsung kenapa kita pakai:
+
+```yaml
+volumes:
+  - belajar-postgres-data:/var/lib/postgresql/data
+```
+
+Lakukan sampai `SELECT * FROM users;` → lalu uji ketahanan data dengan `docker compose down` → `up` → cek apakah data `users` masih ada. 🐘🔥
+
+---
+
+# 🧪 Eksperimen uji ketahanan data: Apakah data tetap ada?
+
+Kondisi saat ini:
+
+```text
+Docker Compose → PostgreSQL Container → belajar-postgres-data → users table (Firman, Budi)
+```
+
+Kita **matikan + hapus container PostgreSQL**, tapi **tidak hapus volume**.
+
+## Langkah eksperimen
+
+**1. Keluar dari PostgreSQL** (di prompt `belajar_db=#`):
+
+```sql
+\q
+```
+
+**2. Matikan Compose** (dari `C:\Users\Admin\Desktop\belajar-dockerfile`):
+
+```powershell
+docker compose down
+```
+
+⚠️ `down` menghapus **container**, tapi **volume tidak dihapus secara default**:
+
+```text
+Container PostgreSQL ❌
+Volume PostgreSQL    ✅
+```
+
+**3. Cek volume masih ada:**
+
+```powershell
+docker volume ls
+```
+
+→ cari `belajar-postgres-data` — harus masih ada. 👍
+
+**4. Jalankan Compose lagi:**
+
+```powershell
+docker compose up -d
+docker compose ps
+```
+
+→ `belajar-compose-postgres` kembali.
+
+**5. Cek data lagi:**
+
+```powershell
+docker exec -it belajar-compose-postgres psql -U postgres -d belajar_db
+```
+
+```sql
+SELECT * FROM users;
+```
+
+### Kalau Volume bekerja dengan benar...
+
+Data **Firman dan Budi masih ada**:
+
+```text
+ id |  name  |       email
+----+--------+-------------------
+  1 | Firman | firman@example.com
+  2 | Budi   | budi@example.com
+```
+
+🎯 Konsep utama:
+
+> **Container bisa dihapus, tetapi data tetap hidup karena disimpan di Volume.**
+
+## ⚠️ Perbedaan penting: `down` vs `down -v`
+
+```text
+docker compose down     → Container ❌  Volume ✅  Data ✅
+docker compose down -v  → Container ❌  Volume ❌  Data ❌
+```
+
+**Jangan jalankan `down -v` dulu** 😄 — kita justru ingin membuktikan volume menyelamatkan data. Lakukan langkah 1–5 terutama `SELECT * FROM users;` setelah container dibuat ulang — demonstrasi Docker Volume yang paling jelas.
+
+---
+
+# 🔥🔥 Hasil eksperimen: Berhasil! Volume bekerja
+
+Bukti langsung **Docker Volume bekerja**:
+
+```text
+PostgreSQL Container (users: Firman, Budi)
+        ↓ docker compose down → Container ❌
+        ↓ docker compose up -d → Container BARU ✅
+        ↓ Volume yang SAMA
+        ↓ Data Firman & Budi ✅
+```
+
+> **Container bukan tempat utama penyimpanan data. Volume-lah yang menyimpan data agar tetap bertahan.**
+
+# 🧠 Rangkuman besar: 5 konsep yang sudah dikuasai
+
+**1. Image** = cetakan/template → `postgres:16-alpine`, `redis:6.0.8`, `nginx`.
+
+**2. Container** = hasil jalan image → `belajar-compose-postgres`, `belajar-compose-redis`, `belajar-compose-nginx`.
+
+**3. Volume** = Container → Volume → Data → `belajar-compose-postgres` → `belajar-postgres-data` → `users`.
+
+**4. Network** = `belajar-dockerfile_default` menghubungkan Nginx, Redis, PostgreSQL — komunikasi via **nama service** (`nginx`, `redis`, `postgres`).
+
+**5. Docker Compose ⭐** = menyatukan semuanya:
+
+```text
+docker-compose.yml → docker compose up
+   → Nginx + Redis + PostgreSQL → Network → PostgreSQL → Volume → Data
+```
+
+🔥 **Sudah mulai menyerupai environment backend sungguhan.**
+
+# 🚀 Langkah berikutnya: Docker + Spring Boot
+
+Paling relevan dengan pekerjaan kamu:
+
+```text
+      Docker
+        │
+   ┌────┼────┐
+   ▼    ▼    ▼
+Spring  PG  Redis
+   └────┼────┘
+      Network
+```
+
+### Spring Boot → PostgreSQL
+
+Dalam Docker Compose:
+
+```properties
+spring.datasource.url=jdbc:postgresql://postgres:5432/belajar_db
+```
+
+**bukan** `localhost:5433` — karena `postgres` = alamat service **dari dalam Docker**, sedangkan `localhost:5433` = alamat **dari host (Windows/DBeaver)**.
+
+## Sebelum masuk Spring Boot: `depends_on` + environment variables
+
+```yaml
+services:
+  app:
+    ...
+    depends_on:
+      - postgres
+      - redis
+  postgres:
+    ...
+  redis:
+    ...
+```
+
+Memahami bagaimana aplikasi backend dan database di-start bersama — lalu baru **project Spring Boot sederhana di Docker**. 🐳☕
+
+---
+
+# LEVEL 7.1 — `depends_on`
+
+Spring Boot butuh PostgreSQL & Redis. Di Compose:
+
+```yaml
+services:
+  app:
+    depends_on:
+      - postgres
+      - redis
+  postgres:
+    image: postgres:16-alpine
+  redis:
+    image: redis:6.0.8
+```
+
+> "Docker, jalankan PostgreSQL dan Redis sebagai dependency sebelum menjalankan `app`."
+
+## ⚠️ Jebakan kecil
+
+`depends_on` **bukan berarti PostgreSQL sudah siap menerima koneksi** — bisa terjadi:
+
+```text
+PostgreSQL container START → masih initialization...
+→ Spring Boot START → coba koneksi → ❌ PostgreSQL belum siap
+```
+
+> `depends_on` = **urutan startup**, bukan jaminan service **ready**. Solusinya nanti: `healthcheck`.
+
+# LEVEL 7.2 — Environment Variable
+
+`environment:` = **config yang diberikan ke container**. PostgreSQL membaca `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB` saat pertama kali membuat database.
+
+## 🧠 Kenapa penting?
+
+```text
+Development → localhost database
+Staging     → staging database
+Production  → production database
+```
+
+Tidak mau mengubah kode setiap ganti environment → pakai `DB_HOST`, `DB_PORT`, `DB_USERNAME`, `DB_PASSWORD`, `DB_NAME`:
+
+```text
+Development: DB_HOST=postgres
+Production:  DB_HOST=production-db.example.com
+```
+
+Kode aplikasi tetap sama. 🔥 Konsep yang sering muncul di Spring Boot.
+
+## 🧪 Praktik
+
+`docker-compose.yml` tidak berubah — `depends_on` **belum perlu** (belum ada app yang bergantung). Buktikan environment variable masuk ke container:
+
+```powershell
+docker exec belajar-compose-postgres env
+```
+
+→ cari `POSTGRES_USER=postgres`, `POSTGRES_PASSWORD=postgres`, `POSTGRES_DB=belajar_db` ✅
+
+## ⭐ Soal password
+
+`POSTGRES_PASSWORD=postgres` aman untuk **latihan**. Untuk **production** ❌ jangan hardcode — pakai secret management / env variable yang aman (dibahas saat deployment).
+
+# 🎯 Setelah ini
+
+Docker sudah lengkap: Image, Container, Dockerfile, Volume, Network, Compose (+ Environment & depends_on). Berikutnya: **☕ Spring Boot → 🐳 Dockerfile → Image → Container → Compose → 🐘 PostgreSQL** — aplikasi Spring Boot yang benar-benar jalan di Docker dan ambil data dari PostgreSQL.
+
+---
+
+# ✅ Bukti env var PostgreSQL berhasil
+
+```text
+POSTGRES_DB=belajar_db
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=postgres
+```
+
+| Variable | Nilai | Arti |
+|---|---|---|
+| `POSTGRES_DB` | `belajar_db` | Nama database |
+| `POSTGRES_USER` | `postgres` | Username |
+| `POSTGRES_PASSWORD` | `postgres` | Password |
+
+Docker seperti komputer kecil yang menerima info config — aplikasi di dalamnya (nanti Spring Boot) membacanya: `Database=belajar_db, Username=postgres, Password=postgres, Host=postgres, Port=5432`.
+
+⚠️ Password `postgres` aman untuk **latihan**; production nanti pakai `.env`, Docker secrets, dan pengelolaan credential.
+
+# 🚀 LEVEL 9 — Docker + Spring Boot + PostgreSQL
+
+```text
+Docker Compose
+┌─────────────────────────────┐
+│  Spring Boot (app, :8080)   │
+│        │ postgres:5432      │
+│        ▼                    │
+│  postgres (:5432, belajar_db)│
+└─────────────────────────────┘
+```
+
+## ⭐ Aturan host yang penting
+
+- **Spring Boot di Windows** → pakai `localhost:5433` (port mapping `5433 → 5432`):
+
+```text
+Windows → localhost:5433 → Docker PostgreSQL:5432
+```
+
+- **Spring Boot di Docker** → ❌ jangan `localhost`, pakai `postgres:5432` (nama service Compose):
+
+```text
+Spring Boot container → postgres:5432 → PostgreSQL container
+```
+
+Inilah alasan kita belajar **Docker Network**. 😄
+
+## 📋 Urutan 7 tahap (project latihan terpisah, tidak ganggu DigiAsk)
+
+```text
+1. Buat project Spring Boot → 2. Jalankan di Windows → 3. Connect ke PostgreSQL Docker
+→ 4. Test API → 5. Buat Dockerfile → 6. Masukkan Spring Boot ke Docker
+→ 7. Docker Compose menjalankan semuanya
+```
+
+Pelan-pelan satu tahap dulu — **tahap pertama: project Spring Boot sederhana**.
+
