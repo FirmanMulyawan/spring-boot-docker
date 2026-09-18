@@ -4028,3 +4028,44 @@ Inilah alasan kita belajar **Docker Network**. 😄
 
 Pelan-pelan satu tahap dulu — **tahap pertama: project Spring Boot sederhana**.
 
+---
+
+# 🌱 Spring Initializr (start.spring.io)
+
+Buat project Spring Boot latihan via **https://start.spring.io/** (tool resmi), sederhana dulu karena tujuan kita **Spring Boot + Docker + PostgreSQL**.
+
+## Konfigurasi
+
+| Bagian | Pilihan |
+|---|---|
+| Project | Maven |
+| Language | Java |
+| Spring Boot | versi stable |
+| Group | `com.belajar` |
+| Artifact / Name | `belajar-spring-docker` |
+| Description | `Belajar Spring Boot dan Docker` |
+| Package name | `com.belajar.springdocker` |
+| Packaging | Jar |
+| Java | **21** (cocok dengan environment; Spring rekomendasi JDK 17/21) |
+
+## Dependencies (jangan banyak-banyak, satu-satu dulu)
+
+```text
+Spring Web
+Spring Data JPA
+PostgreSQL Driver
+```
+
+Klik **GENERATE** → ZIP project → extract & buka di IntelliJ.
+
+## 📁 Lokasi project
+
+```text
+C:\Users\Admin\Desktop\belajar-dockerfile\belajar-spring-docker
+```
+
+(`belajar-dockerfile` = folder utama latihan Docker.)
+
+⚠️ Setelah mengisi form, **cek satu per satu sebelum Generate** — jangan langsung utak-atik file.
+
+

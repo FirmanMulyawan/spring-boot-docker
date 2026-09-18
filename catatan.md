@@ -1837,12 +1837,12 @@ sudah tidak ada.
 
 ### 🧠 Sekarang bedakan 4 perintah ini
 
-| Perintah | Fungsi |
-|---|---|
-| `docker run` | Buat + jalankan container |
-| `docker stop` | Matikan container |
-| `docker rm` | Hapus container |
-| `docker rmi` | Hapus image |
+| Perintah        | Fungsi                    |
+| --------------- | ------------------------- |
+| `docker run`  | Buat + jalankan container |
+| `docker stop` | Matikan container         |
+| `docker rm`   | Hapus container           |
+| `docker rmi`  | Hapus image               |
 
 Urutan latihan kita tadi:
 
@@ -2334,7 +2334,7 @@ Saat ini Nginx menampilkan:
 
 Kita akan ubah menjadi misalnya:
 
-> **Halo Docker!**  
+> **Halo Docker!**
 > Ini website pertama saya yang berjalan di Docker 🚀
 
 Konsepnya nanti:
@@ -2621,7 +2621,7 @@ Kemudian buka browser:
 
 Harus muncul:
 
-> **Halo Docker! 🚀**  
+> **Halo Docker! 🚀**
 > Ini website pertama saya yang berjalan di Docker.
 
 ### 🧠 Pelajaran penting
@@ -2688,7 +2688,7 @@ http://localhost:8081
 
 Kalau benar, harus muncul:
 
-> **Halo Docker! 🚀**  
+> **Halo Docker! 🚀**
 > Ini website pertama saya yang berjalan di Docker.
 
 ### 🧠 Perhatikan perbedaannya
@@ -3141,20 +3141,20 @@ karena kita masih menggunakannya untuk latihan/project.
 
 Sekarang kamu sudah memahami:
 
-| Perintah | Fungsi |
-|---|---|
-| `docker images` | Melihat image |
-| `docker ps` | Melihat container yang sedang hidup |
-| `docker ps -a` | Melihat semua container |
-| `docker run` | Membuat + menjalankan container |
-| `docker stop` | Menghentikan container |
-| `docker start` | Menyalakan kembali container |
-| `docker rm` | Menghapus container |
-| `docker rmi` | Menghapus image |
-| `docker build` | Membuat image dari Dockerfile |
-| `docker logs` | Melihat output/log container |
-| `CMD` | Perintah default ketika container dijalankan |
-| `EXPOSE` | Mendokumentasikan port aplikasi dalam image |
+| Perintah          | Fungsi                                       |
+| ----------------- | -------------------------------------------- |
+| `docker images` | Melihat image                                |
+| `docker ps`     | Melihat container yang sedang hidup          |
+| `docker ps -a`  | Melihat semua container                      |
+| `docker run`    | Membuat + menjalankan container              |
+| `docker stop`   | Menghentikan container                       |
+| `docker start`  | Menyalakan kembali container                 |
+| `docker rm`     | Menghapus container                          |
+| `docker rmi`    | Menghapus image                              |
+| `docker build`  | Membuat image dari Dockerfile                |
+| `docker logs`   | Melihat output/log container                 |
+| `CMD`           | Perintah default ketika container dijalankan |
+| `EXPOSE`        | Mendokumentasikan port aplikasi dalam image  |
 
 Dan konsep paling penting:
 
@@ -4039,6 +4039,7 @@ berarti eksperimen **Volume Persistence berhasil 100%**. 🎯
 Setelah itu kita lanjut ke bagian yang lebih menarik: **bagaimana melihat volume yang sebenarnya dibuat Docker, `docker volume inspect`, dan bedanya Named Volume vs Bind Mount**.
 
 ---
+
 # 🐳 LEVEL 27 — Docker Volume: `docker volume inspect` & Named Volume vs Bind Mount
 
 Sekarang kita bedah **apa sebenarnya yang dibuat Docker ketika kita membuat Volume**.
@@ -4240,13 +4241,13 @@ C:\Users\Admin\Desktop\belajar-dockerfile\data
 
 ## 🆚 Named Volume vs Bind Mount
 
-| | Named Volume | Bind Mount |
-|---|---|---|
-| Contoh | `belajar-volume:/data` | `./data:/data` |
-| Dikelola | Docker | Kita |
-| Lokasi | Docker menentukan | Kita menentukan |
-| Cocok database | ⭐⭐⭐⭐⭐ | ⭐⭐ |
-| Cocok source code | ⭐⭐ | ⭐⭐⭐⭐⭐ |
+|                   | Named Volume             | Bind Mount       |
+| ----------------- | ------------------------ | ---------------- |
+| Contoh            | `belajar-volume:/data` | `./data:/data` |
+| Dikelola          | Docker                   | Kita             |
+| Lokasi            | Docker menentukan        | Kita menentukan  |
+| Cocok database    | ⭐⭐⭐⭐⭐               | ⭐⭐             |
+| Cocok source code | ⭐⭐                     | ⭐⭐⭐⭐⭐       |
 
 ---
 
@@ -4354,7 +4355,6 @@ Kafka
 bisa saling berbicara **tanpa menggunakan `localhost` di antara container**. 🚀
 
 ---
-
 
 # 🐳 LEVEL 28 — Bedah Detail Volume & Praktik Bind Mount Pertama
 
@@ -5103,12 +5103,12 @@ bisa benar, karena Spring Boot berada di Windows/host.
 
 Jadi gampangnya:
 
-| Kondisi | Host database |
-|---|---|
-| Spring Boot di Windows → PostgreSQL Docker | `localhost` |
-| Spring Boot Docker → PostgreSQL Docker | `postgres` |
-| Container A → Container B | nama container |
-| Container → dirinya sendiri | `localhost` |
+| Kondisi                                     | Host database  |
+| ------------------------------------------- | -------------- |
+| Spring Boot di Windows → PostgreSQL Docker | `localhost`  |
+| Spring Boot Docker → PostgreSQL Docker     | `postgres`   |
+| Container A → Container B                  | nama container |
+| Container → dirinya sendiri                | `localhost`  |
 
 💡 **Ini nanti akan menjelaskan banyak error connection yang sering muncul saat belajar Docker + Spring Boot.**
 
@@ -7025,7 +7025,7 @@ services:
 
   postgres:
     ...
-    
+  
   redis:
     ...
 ```
@@ -7347,11 +7347,11 @@ POSTGRES_PASSWORD=postgres
 
 Artinya PostgreSQL container kita dikonfigurasi seperti ini:
 
-| Variable | Nilai | Arti |
-|---|---|---|
-| `POSTGRES_DB` | `belajar_db` | Nama database |
-| `POSTGRES_USER` | `postgres` | Username |
-| `POSTGRES_PASSWORD` | `postgres` | Password |
+| Variable              | Nilai          | Arti          |
+| --------------------- | -------------- | ------------- |
+| `POSTGRES_DB`       | `belajar_db` | Nama database |
+| `POSTGRES_USER`     | `postgres`   | Username      |
+| `POSTGRES_PASSWORD` | `postgres`   | Password      |
 
 ### 🧠 Kenapa environment variable penting?
 
@@ -7434,6 +7434,7 @@ Arsitekturnya nanti seperti ini:
 └──────────────────────────────────────────┘
 ```
 
+
 Ada **satu konsep yang sangat penting** di sini.
 
 ### Kalau Spring Boot jalan di Windows
@@ -7512,3 +7513,67 @@ Dan kita lakukan **pelan-pelan satu tahap dahulu**, bukan langsung semuanya.
 
 **Tahap pertama:** membuat project Spring Boot sederhana.
 
+---
+
+# 🌱 Membuat Project Spring Boot dengan Spring Initializr
+
+Kita gunakan **https://start.spring.io/** — tool resmi untuk membuat project Spring Boot dengan konfigurasi dan dependency awal.
+
+Karena tujuan kita adalah **belajar Spring Boot + Docker + PostgreSQL**, kita buat project yang sederhana dulu.
+
+### Isi seperti ini
+
+| Bagian | Pilihan |
+|---|---|
+| **Project** | Maven |
+| **Language** | Java |
+| **Spring Boot** | Versi stable yang ditawarkan |
+| **Group** | `com.belajar` |
+| **Artifact** | `belajar-spring-docker` |
+| **Name** | `belajar-spring-docker` |
+| **Description** | `Belajar Spring Boot dan Docker` |
+| **Package name** | `com.belajar.springdocker` |
+| **Packaging** | Jar |
+| **Java** | 21 |
+
+Java **21 cocok dengan environment kamu** — Spring merekomendasikan JDK 17 atau 21 pada quickstart mereka.
+
+### Dependencies
+
+Klik **Add Dependencies**, lalu tambahkan:
+
+1. **Spring Web**
+2. **Spring Data JPA**
+3. **PostgreSQL Driver**
+
+```text
+Spring Web
+Spring Data JPA
+PostgreSQL Driver
+```
+
+**Jangan tambahkan terlalu banyak dependency dulu.** Kita sengaja belajar satu-satu.
+
+Setelah itu klik:
+
+**GENERATE**
+
+Spring Initializr akan membuat ZIP project yang bisa kamu extract dan buka di IntelliJ.
+
+### 📁 Lokasi project
+
+Supaya pembelajaran rapi, taruh di:
+
+```text
+C:\Users\Admin\Desktop\belajar-dockerfile\
+```
+
+Misalnya:
+
+```text
+C:\Users\Admin\Desktop\belajar-dockerfile\belajar-spring-docker
+```
+
+Folder `belajar-dockerfile` memang kita gunakan sebagai folder utama latihan Docker.
+
+**Setelah selesai mengisi Start.spring.io, jangan langsung utak-atik file.** Cek **satu per satu** sebelum klik Generate.

@@ -241,4 +241,8 @@ services:
 - **LEVEL 9 dimulai — Docker + Spring Boot + PostgreSQL**: app `:8080` → connect ke `postgres:5432` (nama service) di dalam Compose.
 - Aturan host: dari **Windows** pakai `localhost:5433` (mapping 5433→5432); dari **container** pakai `postgres:5432` (nama service, bukan `localhost`) — inti pelajaran Docker Network.
 - Rencana 7 tahap (project latihan terpisah dari DigiAsk): buat Spring Boot → jalan di Windows → connect PostgreSQL Docker → test API → buat Dockerfile → masukkan ke Docker → Compose jalan semuanya. Mulai pelan-pelan: **tahap 1 = project Spring Boot sederhana**.
+- **Spring Initializr (`start.spring.io`)**: Maven, Java, Java **21**, group `com.belajar`, artifact/name `belajar-spring-docker`, package `com.belajar.springdocker`, packaging **Jar**.
+- Dependencies (dikit dulu, satu-satu): **Spring Web + Spring Data JPA + PostgreSQL Driver** → **GENERATE** → extract ZIP → buka di IntelliJ.
+- Lokasi: `C:\Users\Admin\Desktop\belajar-dockerfile\belajar-spring-docker` (folder `belajar-dockerfile` = folder utama latihan).
+- Cek pilihan form **satu per satu sebelum Generate** — jangan langsung utak-atik file.
 
